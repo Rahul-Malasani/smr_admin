@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smr_admin/models/user.dart';
+import 'package:smr_admin/widgets/logout_widget.dart'; // ✅ Import reusable logout widget
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -10,30 +11,60 @@ class DashboardScreen extends StatelessWidget {
     final args = ModalRoute.of(context)!.settings.arguments as Map;
     final User user = args['user'];
 
-    // Define menu options based on role
+    // Define menu options based on role (kept same as before)
     List<Map<String, String>> menuOptions = [];
 
-    if (user.role == "Admin") {
-      menuOptions = [
-        {"title": "Companies", "route": "/companies"},
-        {"title": "Branches", "route": "/branches"},
-        {"title": "Staff", "route": "/staff"},
-        {"title": "Products", "route": "/products"},
-        {"title": "Cadres", "route": "/cadres"},
-      ];
-    } else if (user.role == "Staff") {
-      menuOptions = [
-        {"title": "My Branch", "route": "/branches"},
-        {"title": "Products", "route": "/products"},
-      ];
-    } else if (user.role == "Reports") {
-      menuOptions = [
-        {"title": "Reports", "route": "/reports"},
-      ];
+    switch (user.role) {
+      case "Admin":
+        menuOptions = [
+          {"title": "Companies", "route": "/companies"},
+          {"title": "Branches", "route": "/branches"},
+          {"title": "Staff", "route": "/staff"},
+          {"title": "Products", "route": "/products"},
+          {"title": "Cadres", "route": "/cadres"},
+          {"title": "Users", "route": "/users"},
+          {"title": "Branch-Product Mapping", "route": "/branch-products"},
+        ];
+        break;
+
+      case "DataEntry":
+        menuOptions = [
+          {"title": "My Branch", "route": "/branches"},
+          {"title": "Products", "route": "/products"},
+        ];
+        break;
+
+      case "Reports":
+        menuOptions = [
+          {"title": "Reports", "route": "/reports"},
+        ];
+        break;
+
+      case "Master":
+        menuOptions = [
+          {"title": "All Data", "route": "/all"},
+          {"title": "Companies", "route": "/companies"},
+          {"title": "Branches", "route": "/branches"},
+          {"title": "Staff", "route": "/staff"},
+          {"title": "Products", "route": "/products"},
+          {"title": "Cadres", "route": "/cadres"},
+          {"title": "Reports", "route": "/reports"},
+        ];
+        break;
+
+      default:
+        menuOptions = [
+          {"title": "No Access", "route": "/"},
+        ];
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text("Dashboard - ${user.role}")),
+      appBar: AppBar(
+        title: Text("Dashboard - ${user.role}"),
+        actions: const [
+          LogoutWidget(), // ✅ Reusable logout widget
+        ],
+      ),
       body: ListView.builder(
         itemCount: menuOptions.length,
         itemBuilder: (context, index) {

@@ -1,61 +1,62 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:smr_admin/models/staff.dart';
-import 'package:smr_admin/services/staff_service.dart';
-import 'package:smr_admin/screens/staff/staff_form.dart';
+import 'package:smr_admin/models/user.dart';
+import 'package:smr_admin/services/user_service.dart';
+import 'package:smr_admin/screens/user/user_form.dart';
 import 'package:smr_admin/widgets/logout_widget.dart'; // ✅ import reusable logout
 
-class StaffListScreen extends StatefulWidget {
-  const StaffListScreen({super.key});
+class UserListScreen extends StatefulWidget {
+  const UserListScreen({super.key});
 
   @override
-  State<StaffListScreen> createState() => _StaffListScreenState();
+  State<UserListScreen> createState() => _UserListScreenState();
 }
 
-class _StaffListScreenState extends State<StaffListScreen> {
-  List<Staff> staffList = [];
+class _UserListScreenState extends State<UserListScreen> {
+  List<User> users = [];
 
   @override
   void initState() {
     super.initState();
-    staffList = StaffService.getAll();
+    users = UserService.getAll();
   }
 
-  void _addStaff() {
-    Navigator.push(
+  Future<void> _addUser() async {
+    final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (ctx) => const StaffForm()),
-    ).then((_) {
+      MaterialPageRoute(builder: (ctx) => const UserForm()),
+    );
+    if (result == true) {
       setState(() {
-        staffList = StaffService.getAll();
+        users = UserService.getAll();
       });
-    });
+    }
   }
 
-  void _editStaff(Staff staff) {
-    Navigator.push(
+  Future<void> _editUser(User user) async {
+    final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (ctx) => StaffForm(staff: staff)),
-    ).then((_) {
+      MaterialPageRoute(builder: (ctx) => UserForm(user: user)),
+    );
+    if (result == true) {
       setState(() {
-        staffList = StaffService.getAll();
+        users = UserService.getAll();
       });
-    });
+    }
   }
 
-  void _deleteStaff(Staff staff) {
-    StaffService.delete(staff.id);
+  void _deleteUser(String staffId) {
+    UserService.delete(staffId);
     setState(() {
-      staffList = StaffService.getAll();
+      users = UserService.getAll();
     });
   }
 
-  Future<void> _confirmDelete(BuildContext context, Staff staff) async {
+  Future<void> _confirmDelete(BuildContext context, String staffId) async {
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Confirm Delete"),
-        content: Text("Are you sure you want to delete ${staff.name}?"),
+        content: const Text("Are you sure you want to delete this user?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -69,7 +70,7 @@ class _StaffListScreenState extends State<StaffListScreen> {
       ),
     );
     if (shouldDelete == true) {
-      _deleteStaff(staff);
+      _deleteUser(staffId);
     }
   }
 
@@ -77,30 +78,30 @@ class _StaffListScreenState extends State<StaffListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Staff"),
+        title: const Text("Users"),
         actions: const [
           LogoutWidget(), // ✅ reusable logout
         ],
       ),
       body: ListView.builder(
-        itemCount: staffList.length,
-        itemBuilder: (context, index) {
-          final staff = staffList[index];
+        itemCount: users.length,
+        itemBuilder: (ctx, i) {
+          final user = users[i];
           return ListTile(
-            title: Text(staff.name),
+            title: Text(user.username),
             subtitle: Text(
-              "${staff.cadre} • DoJ: ${DateFormat('dd/MM/yyyy').format(staff.doj)}",
+              "Staff: ${user.staffId} • ${user.role} - ${user.isActive ? "Active" : "Inactive"}",
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
                   icon: const Icon(Icons.edit, color: Colors.orange),
-                  onPressed: () => _editStaff(staff),
+                  onPressed: () => _editUser(user),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => _confirmDelete(context, staff),
+                  onPressed: () => _confirmDelete(context, user.staffId),
                 ),
               ],
             ),
@@ -108,7 +109,7 @@ class _StaffListScreenState extends State<StaffListScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _addStaff,
+        onPressed: _addUser,
         child: const Icon(Icons.add),
       ),
     );
